@@ -1,0 +1,154 @@
+.user-navbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 10000;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+  padding: 12px 0;
+}
+
+.navbar-brand-custom {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  transition: all 0.2s ease;
+}
+
+.navbar-brand-custom:hover {
+  color: #0f766e;
+}
+
+.navbar-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f766e 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 25px rgba(15, 118, 110, 0.25);
+}
+
+.navbar-links-custom {
+  margin-left: 30px;
+  gap: 10px;
+}
+
+.navbar-link-custom {
+  text-decoration: none;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.navbar-link-custom:hover {
+  color: #0f766e;
+  background-color: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.active-navbar-link {
+  color: white !important;
+  background-color: #0f766e;
+  box-shadow: 0 10px 22px rgba(15, 118, 110, 0.22);
+}
+
+.favorite-nav-link {
+  position: relative;
+}
+
+.favorite-nav-icon {
+  font-size: 21px !important;
+  color: #ef4444;
+}
+
+.active-navbar-link .favorite-nav-icon {
+  color: white;
+}
+
+.favorite-count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-navbar-link .favorite-count {
+  background-color: white;
+  color: #0f766e;
+}
+
+.admin-link {
+  color: #1e293b;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-link:hover {
+  background-color: #1e293b;
+  color: white;
+}
+
+.admin-icon {
+  font-size: 21px !important;
+}
+
+.navbar-toggler-custom {
+  border: none !important;
+  box-shadow: none !important;
+  background-color: #f1f5f9 !important;
+  border-radius: 12px !important;
+  padding: 8px 10px !important;
+}
+
+.navbar-toggler-custom:focus {
+  box-shadow: none !important;
+}
+
+@media (max-width: 991px) {
+  .navbar-links-custom {
+    margin-left: 0;
+    margin-top: 18px;
+    gap: 8px;
+  }
+
+  .navbar-link-custom {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-link {
+    margin-top: 8px;
+  }
+
+  .navbar-brand-custom {
+    font-size: 21px;
+  }
+
+  .navbar-logo-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
