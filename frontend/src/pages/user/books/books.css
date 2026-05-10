@@ -1,7 +1,8 @@
 .library-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f4ff 0%, #eef7ff 50%, #fff7ed 100%);
+  background: var(--page-bg);
   padding-bottom: 50px;
+  transition: background 0.3s ease;
 }
 
 .library-hero {
@@ -257,4 +258,61 @@
   .details-link {
     flex: unset;
   }
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .library-search-box {
+    flex-wrap: wrap;
+  }
+
+  .toolbar-buttons {
+    width: 100%;
+  }
+
+  .library-btn {
+    flex: 1;
+  }
+
+  .details-link {
+    flex: unset;
+  }
+}
+
+.page-jump-form {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.page-jump-input {
+  width: 58px;
+  border: none;
+  outline: none;
+  background-color: #f8fafc;
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 5px 8px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.page-jump-input:focus {
+  background-color: #ecfeff;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.25);
+}
+
+.page-jump-input::-webkit-outer-spin-button,
+.page-jump-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.page-jump-input {
+  -moz-appearance: textfield;
 }

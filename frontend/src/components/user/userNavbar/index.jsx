@@ -3,7 +3,8 @@ import React, { useContext } from 'react'
 import Container from 'react-bootstrap/Container'
 import Nav from 'react-bootstrap/Nav'
 import BootstrapNavbar from 'react-bootstrap/Navbar'
-
+import DarkModeIcon from '@mui/icons-material/DarkMode'
+import LightModeIcon from '@mui/icons-material/LightMode'
 import { NavLink } from "react-router-dom"
 
 import FavoriteIcon from '@mui/icons-material/Favorite'
@@ -13,10 +14,12 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import { favoriteContext } from '../../../context/FavoritesContext'
 import { basketContext } from '../../../context/BasketContext'
 import "./navbar.css"
+import { ThemeContext } from '../../../context/ThemeContext'
 
 function UserNavbar() {
   const { favorites } = useContext(favoriteContext)
   const { basket } = useContext(basketContext)
+  const { theme, toggleTheme } = useContext(ThemeContext)
 
   return (
     <BootstrapNavbar expand="lg" className="user-navbar">
@@ -69,6 +72,9 @@ function UserNavbar() {
               Admin
             </NavLink>
           </Nav> */}
+          <button className="theme-toggle-btn" onClick={toggleTheme}>
+            {theme === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+          </button>
         </BootstrapNavbar.Collapse>
       </Container>
     </BootstrapNavbar>

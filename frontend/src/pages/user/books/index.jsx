@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import axios from "axios"
+import { NavLink } from 'react-router-dom'
 
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
@@ -9,20 +10,21 @@ import Col from 'react-bootstrap/Col'
 import Badge from 'react-bootstrap/Badge'
 import Spinner from 'react-bootstrap/Spinner'
 
+import { IconButton } from '@mui/material'
+
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import SearchIcon from '@mui/icons-material/Search'
 import AutoStoriesIcon from '@mui/icons-material/AutoStories'
 import DownloadIcon from '@mui/icons-material/Download'
 import LanguageIcon from '@mui/icons-material/Language'
-import { IconButton } from '@mui/material'
 
 import { favoriteContext } from '../../../context/FavoritesContext'
 
 import './books.css'
-import { NavLink } from 'react-router-dom'
 
 const DBurl = "https://gutendex.com/books"
+const BOOKS_PER_PAGE = 32
 
 function Books() {
   const [data, setData] = useState([])
@@ -33,8 +35,244 @@ function Books() {
   const [nextPage, setNextPage] = useState(null)
   const [previousPage, setPreviousPage] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  const [searchValue, setSearchValue] = useState("")
+  const [activeSearchValue, setActiveSearchValue] = useState("")
+  const [pageInput, setPageInput] = useState("")
 
   const { favorites, setFavorites } = useContext(favoriteContext)
+
+  function createPageUrl(pageNumber = 1, searchText = activeSearchValue) {
+    const params = new URLSearchParams()
+
+    if (searchText.trim() !== "") {
+      params.set("search", searchText.trim())
+    }
+
+    if (pageNumber > 1) {
+      params.set("page", pageNumber)
+    }
+
+    const queryString = params.toString()
+
+    return queryString ? `${DBurl}?${queryString}` : DBurl
+  }
+
+  function getPagesCache() {
+    const cachedPages = localStorage.getItem("gutendexPagesCache")
+    return cachedPages ? JSON.parse(cachedPages) : {}
+  }
+
+  function savePageToCache(url, pageData) {
+    const cachedPages = getPagesCache()
+
+    cachedPages[url] = pageData
+
+    localStorage.setItem("gutendexPagesCache", JSON.stringify(cachedPages))
+  }
+
+  function saveCurrentView(url, pageNumber, currentSearchValue) {
+    localStorage.setItem("gutendexCurrentUrl", url)
+    localStorage.setItem("gutendexCurrentPage", pageNumber)
+    localStorage.setItem("gutendexSearchValue", currentSearchValue)
+  }
+
+  function setBooksFromPage(pageData) {
+    setData(pageData.results)
+    setOriginalData(pageData.results)
+    setNextPage(pageData.next)
+    setPreviousPage(pageData.previous)
+    setCurrentPage(pageData.pageNumber)
+    setTotalPages(pageData.totalPages)
+    setPageInput("")
+  }
+
+  function getData(url = DBurl, pageNumber = 1, options = {}) {
+    const {
+      forceRefresh = false,
+      searchText = activeSearchValue,
+    } = options
+
+    setError("")
+
+    if (!forceRefresh) {
+      const cachedPages = getPagesCache()
+      const cachedPage = cachedPages[url]
+
+      if (cachedPage) {
+        setBooksFromPage(cachedPage)
+        saveCurrentView(url, cachedPage.pageNumber, searchText)
+        return
+      }
+    }
+
+    setLoading(true)
+
+    axios.get(url)
+      .then(res => {
+        const totalPageCount = Math.ceil(res.data.count / BOOKS_PER_PAGE)
+
+        const pageData = {
+          results: res.data.results,
+          next: res.data.next,
+          previous: res.data.previous,
+          count: res.data.count,
+          totalPages: totalPageCount,
+          pageNumber: pageNumber,
+        }
+
+        setBooksFromPage(pageData)
+        savePageToCache(url, pageData)
+        saveCurrentView(url, pageNumber, searchText)
+      })
+      .catch(err => {
+        console.log(err)
+        setError("Something went wrong. Please try again later.")
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
+
+  function getCachedData() {
+    const currentUrl = localStorage.getItem("gutendexCurrentUrl")
+    const cachedSearchValue = localStorage.getItem("gutendexSearchValue")
+
+    if (cachedSearchValue) {
+      setSearchValue(cachedSearchValue)
+      setActiveSearchValue(cachedSearchValue)
+    }
+
+    if (currentUrl) {
+      getData(currentUrl, 1, {
+        searchText: cachedSearchValue || "",
+      })
+    } else {
+      getData(DBurl, 1, {
+        searchText: "",
+      })
+    }
+  }
+
+  useEffect(() => {
+    getCachedData()
+  }, [])
+
+  function handleSearchSubmit(e) {
+    e.preventDefault()
+
+    const trimmedValue = searchValue.trim()
+
+    if (trimmedValue === "") {
+      clearSearch()
+      return
+    }
+
+    setActiveSearchValue(trimmedValue)
+
+    const searchUrl = createPageUrl(1, trimmedValue)
+
+    getData(searchUrl, 1, {
+      searchText: trimmedValue,
+    })
+
+    window.scrollTo(0, 0)
+  }
+
+  function clearSearch() {
+    setSearchValue("")
+    setActiveSearchValue("")
+
+    const firstPageUrl = createPageUrl(1, "")
+
+    getData(firstPageUrl, 1, {
+      searchText: "",
+    })
+
+    window.scrollTo(0, 0)
+  }
+
+  function goToNextPage() {
+    if (nextPage) {
+      getData(nextPage, currentPage + 1, {
+        searchText: activeSearchValue,
+      })
+
+      window.scrollTo(0, 0)
+    }
+  }
+
+  function goToPreviousPage() {
+    if (previousPage && currentPage > 1) {
+      getData(previousPage, currentPage - 1, {
+        searchText: activeSearchValue,
+      })
+
+      window.scrollTo(0, 0)
+    }
+  }
+
+  function goToPage(e) {
+    e.preventDefault()
+
+    const selectedPage = Number(pageInput)
+
+    if (!selectedPage || selectedPage < 1 || selectedPage > totalPages) {
+      setError(`Please enter a page number from 1 to ${totalPages}.`)
+      setPageInput("")
+      return
+    }
+
+    if (selectedPage === currentPage) {
+      setPageInput("")
+      return
+    }
+
+    const pageUrl = createPageUrl(selectedPage, activeSearchValue)
+
+    getData(pageUrl, selectedPage, {
+      searchText: activeSearchValue,
+    })
+
+    window.scrollTo(0, 0)
+  }
+
+  function refreshData() {
+    localStorage.removeItem("gutendexPagesCache")
+    localStorage.removeItem("gutendexCurrentUrl")
+    localStorage.removeItem("gutendexCurrentPage")
+    localStorage.removeItem("gutendexSearchValue")
+
+    setSearchValue("")
+    setActiveSearchValue("")
+    setData([])
+    setOriginalData([])
+    setNextPage(null)
+    setPreviousPage(null)
+    setCurrentPage(1)
+    setTotalPages(1)
+    setPageInput("")
+
+    getData(DBurl, 1, {
+      forceRefresh: true,
+      searchText: "",
+    })
+
+    window.scrollTo(0, 0)
+  }
+
+  function resetSorting() {
+    setData(originalData)
+  }
+
+  function handleSortByName() {
+    const sortedBooks = [...data].sort((a, b) =>
+      a.title.localeCompare(b.title)
+    )
+
+    setData(sortedBooks)
+  }
 
   function handleAddFavorite(product) {
     const findFavorite = favorites.find(favorite => favorite.id === product.id)
@@ -51,108 +289,6 @@ function Books() {
     return favorites.some(favorite => favorite.id === product.id)
   }
 
-  function getData(url = DBurl, pageNumber = 1) {
-    setLoading(true)
-    setError("")
-
-    axios.get(url)
-      .then(res => {
-        setData(res.data.results)
-        setOriginalData(res.data.results)
-        setNextPage(res.data.next)
-        setPreviousPage(res.data.previous)
-        setCurrentPage(pageNumber)
-
-        localStorage.setItem("gutendexBooks", JSON.stringify(res.data.results))
-        localStorage.setItem("gutendexNextPage", res.data.next)
-        localStorage.setItem("gutendexPreviousPage", res.data.previous)
-        localStorage.setItem("gutendexCurrentPage", pageNumber)
-      })
-      .catch(err => {
-        console.log(err)
-        setError("Something went wrong. Please try again later.")
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }
-
-  function getCachedData() {
-    const cachedBooks = localStorage.getItem("gutendexBooks")
-    const cachedNextPage = localStorage.getItem("gutendexNextPage")
-    const cachedPreviousPage = localStorage.getItem("gutendexPreviousPage")
-    const cachedCurrentPage = localStorage.getItem("gutendexCurrentPage")
-
-    if (cachedBooks) {
-      const books = JSON.parse(cachedBooks)
-
-      setData(books)
-      setOriginalData(books)
-      setNextPage(cachedNextPage && cachedNextPage !== "null" ? cachedNextPage : null)
-      setPreviousPage(cachedPreviousPage && cachedPreviousPage !== "null" ? cachedPreviousPage : null)
-      setCurrentPage(cachedCurrentPage ? Number(cachedCurrentPage) : 1)
-    } else {
-      getData()
-    }
-  }
-
-  function goToNextPage() {
-    if (nextPage) {
-      getData(nextPage, currentPage + 1)
-      window.scrollTo(0, 0)
-    }
-  }
-
-  function goToPreviousPage() {
-    if (previousPage && currentPage > 1) {
-      getData(previousPage, currentPage - 1)
-      window.scrollTo(0, 0)
-    }
-  }
-
-  function refreshData() {
-    localStorage.removeItem("gutendexBooks")
-    localStorage.removeItem("gutendexNextPage")
-    localStorage.removeItem("gutendexPreviousPage")
-    localStorage.removeItem("gutendexCurrentPage")
-
-    setData([])
-    setOriginalData([])
-    setNextPage(null)
-    setPreviousPage(null)
-    setCurrentPage(1)
-
-    getData(DBurl, 1)
-  }
-
-  useEffect(() => {
-    getCachedData()
-  }, [])
-
-
-  function handleSearch(e) {
-    const value = e.target.value.toLowerCase().trim()
-
-    if (value === "") {
-      setData(originalData)
-    } else {
-      const filteredBooks = originalData.filter(book =>
-        book.title.toLowerCase().trim().includes(value) ||
-        getAuthorName(book).toLowerCase().trim().includes(value)
-      )
-
-      setData(filteredBooks)
-    }
-  }
-
-  function handleSortByName() {
-    const sortedBooks = [...data].sort((a, b) =>
-      a.title.localeCompare(b.title)
-    )
-
-    setData(sortedBooks)
-  }
-
   function getAuthorName(book) {
     return book.authors && book.authors.length > 0
       ? book.authors[0].name
@@ -161,18 +297,8 @@ function Books() {
 
   function getCoverImage(book) {
     return (
-      book.formats["image/jpeg"] ||
+      book.formats?.["image/jpeg"] ||
       "https://via.placeholder.com/300x450?text=No+Cover"
-    )
-  }
-
-  function getReadLink(book) {
-    return (
-      book.formats["text/html"] ||
-      book.formats["text/html; charset=utf-8"] ||
-      book.formats["text/plain; charset=utf-8"] ||
-      book.formats["text/plain"] ||
-      book.formats["application/epub+zip"]
     )
   }
 
@@ -194,23 +320,38 @@ function Books() {
 
       <Container>
         <div className="library-toolbar">
-          <div className="library-search-box">
+          <form className="library-search-box" onSubmit={handleSearchSubmit}>
             <SearchIcon className="text-slate-500" />
 
             <input
               type="search"
               placeholder="Search by title or author..."
-              onChange={handleSearch}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               className="library-search-input"
             />
-          </div>
 
-          <div className="d-flex gap-2 flex-wrap">
+            <Button type="submit" className="library-btn library-btn-green">
+              Search
+            </Button>
+
+            {searchValue && (
+              <Button
+                type="button"
+                className="library-btn library-btn-gray"
+                onClick={clearSearch}
+              >
+                Clear
+              </Button>
+            )}
+          </form>
+
+          <div className="toolbar-buttons">
             <Button className="library-btn library-btn-green" onClick={handleSortByName}>
               Sort by name
             </Button>
 
-            <Button className="library-btn library-btn-gray" onClick={() => setData(originalData)}>
+            <Button className="library-btn library-btn-gray" onClick={resetSorting}>
               Reset
             </Button>
 
@@ -229,9 +370,22 @@ function Books() {
             Previous
           </Button>
 
-          <div className="page-number">
-            Page {currentPage}
-          </div>
+          <form className="page-number page-jump-form" onSubmit={goToPage}>
+            <span>Page</span>
+
+            <input
+              type="number"
+              min="1"
+              max={totalPages}
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              onFocus={() => setPageInput(currentPage)}
+              placeholder={currentPage}
+              className="page-jump-input"
+            />
+
+            <span>of {totalPages}</span>
+          </form>
 
           <Button
             className="library-btn library-btn-green"
@@ -268,7 +422,7 @@ function Books() {
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && data.length > 0 && (
           <Row className="mt-8">
             {data.map(product => (
               <Col lg={3} md={4} sm={6} key={product.id} className="mb-4">
@@ -283,7 +437,7 @@ function Books() {
                     />
                   </div>
 
-                  <div className="flex gap-2 mb-3 flex-wrap">
+                  <div className="d-flex gap-2 mb-3 flex-wrap">
                     <Badge bg="light" text="dark" className="book-badge">
                       <LanguageIcon className="badge-icon" />
                       {product.languages?.[0]?.toUpperCase() || "Unknown"}
@@ -291,7 +445,7 @@ function Books() {
 
                     <Badge bg="light" text="dark" className="book-badge">
                       <DownloadIcon className="badge-icon" />
-                      {product.download_count}
+                      {product.download_count || 0}
                     </Badge>
                   </div>
 
@@ -304,7 +458,13 @@ function Books() {
                   </Card.Text>
 
                   <div className="book-actions">
-                    <NavLink to={`/books/${product.id}`} className="library-btn library-btn-green details-link">Details</NavLink>
+                    <NavLink
+                      to={`/books/${product.id}`}
+                      className="library-btn library-btn-green details-link"
+                    >
+                      Details
+                    </NavLink>
+
                     <IconButton onClick={() => handleAddFavorite(product)}>
                       {isFavorite(product) ? (
                         <FavoriteIcon className="favorite-icon" />
@@ -329,9 +489,22 @@ function Books() {
               Previous
             </Button>
 
-            <div className="page-number">
-              Page {currentPage}
-            </div>
+            <form className="page-number page-jump-form" onSubmit={goToPage}>
+              <span>Page</span>
+
+              <input
+                type="number"
+                min="1"
+                max={totalPages}
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value)}
+                onFocus={() => setPageInput(currentPage)}
+                placeholder={currentPage}
+                className="page-jump-input"
+              />
+
+              <span>of {totalPages}</span>
+            </form>
 
             <Button
               className="library-btn library-btn-green"

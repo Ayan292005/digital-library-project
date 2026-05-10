@@ -30,3 +30,22 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #0f766e #f1f5f9;
 }
+
+:root {
+  --page-bg: linear-gradient(135deg, #f8f4ff 0%, #eef7ff 50%, #fff7ed 100%);
+  --layout-bg: rgba(255, 255, 255, 0.88);
+  --layout-border: rgba(226, 232, 240, 0.8);
+  --layout-shadow: rgba(15, 23, 42, 0.08);
+}
+
+body[data-theme="dark"] {
+  --page-bg: linear-gradient(135deg, #020617 0%, #0f172a 55%, #134e4a 100%);
+  --layout-bg: rgba(15, 23, 42, 0.92);
+  --layout-border: rgba(51, 65, 85, 0.9);
+  --layout-shadow: rgba(0, 0, 0, 0.28);
+}
+
+body {
+  background: var(--page-bg);
+  transition: background 0.3s ease;
+}

@@ -1,7 +1,8 @@
 .reader-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f4ff 0%, #eef7ff 50%, #fff7ed 100%);
+  background: var(--page-bg);
   padding: 50px 0 70px;
+  transition: background 0.3s ease;
 }
 
 .reader-back-btn {

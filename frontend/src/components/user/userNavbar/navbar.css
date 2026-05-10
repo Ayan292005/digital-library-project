@@ -3,11 +3,35 @@
   top: 0;
   width: 100%;
   z-index: 10000;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--layout-bg);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid var(--layout-border);
+  box-shadow: 0 8px 25px var(--layout-shadow);
   padding: 12px 0;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  min-height: 85px;
+}
+
+body[data-theme="dark"] .navbar-brand-custom,
+body[data-theme="dark"] .navbar-link-custom {
+  color: #f8fafc;
+}
+
+body[data-theme="dark"] .navbar-link-custom:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #5eead4;
+}
+
+body[data-theme="dark"] .admin-link {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+body[data-theme="dark"] .theme-toggle-btn {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  border-color: #334155;
 }
 
 .navbar-brand-custom {
@@ -151,4 +175,31 @@
     width: 40px;
     height: 40px;
   }
+}
+
+.navbar-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 14px;
+  background-color: #f8fafc;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.theme-toggle-btn:hover {
+  background-color: #0f766e;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(15, 118, 110, 0.22);
 }

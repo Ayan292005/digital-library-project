@@ -1,7 +1,7 @@
 .details-page {
-  min-height: 100%;
-  background: linear-gradient(135deg, #f8f4ff 0%, #eef7ff 50%, #fff7ed 100%);
-  padding: 55px 0 70px;
+  min-height: 100vh;
+  background: var(--page-bg);
+  transition: background 0.3s ease;
 }
 
 .details-back-btn {

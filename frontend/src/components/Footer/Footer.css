@@ -1,9 +1,30 @@
 .site-footer {
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--layout-bg);
   backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 -8px 25px rgba(15, 23, 42, 0.06);
+  border-top: 1px solid var(--layout-border);
+  box-shadow: 0 -8px 25px var(--layout-shadow);
   padding: 28px 20px;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body[data-theme="dark"] .footer-brand h3 {
+  color: #f8fafc;
+}
+
+body[data-theme="dark"] .footer-brand p,
+body[data-theme="dark"] .footer-copy {
+  color: #cbd5e1;
+}
+
+body[data-theme="dark"] .footer-social-link {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+body[data-theme="dark"] .footer-social-link:hover {
+  background-color: #0f766e;
+  color: white;
 }
 
 .footer-container {

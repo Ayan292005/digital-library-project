@@ -1,7 +1,6 @@
 .home-page {
-  min-height: 100%;
-  background: linear-gradient(135deg, #f8f4ff 0%, #eef7ff 50%, #fff7ed 100%);
-  padding-bottom: 60px;
+  background: var(--page-bg);
+  transition: background 0.3s ease;
 }
 
 /* Top banner */
@@ -397,7 +396,7 @@
 .home-features {
   max-width: 1140px;
   margin: 35px auto 0;
-  padding: 0 20px;
+  padding: 0 20px 80px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
